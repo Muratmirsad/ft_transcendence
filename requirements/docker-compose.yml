@@ -37,8 +37,10 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"  # HTTPS için port açıldı
     volumes:
-      - ../docker/nginx/ssl:/etc/nginx/ssl
+      - ../docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../docker/frontend:/var/www/html
       - static_volume:/app/static
     depends_on:
       - backend
