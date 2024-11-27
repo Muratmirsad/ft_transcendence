@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../docker/backend
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../docker/backend/src:/app
+    depends_on:
+      - database
+    env_file:
+      - ../requirements/.env
+
+  database:
+    build:
+      context: ../docker/database
+      dockerfile: Dockerfile
+    container_name: database
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ../requirements/.env
+
+  nginx:
+    build:
+      context: ../docker/nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ../docker/nginx/ssl:/etc/nginx/ssl
+      - static_volume:/app/static
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  static_volume:
