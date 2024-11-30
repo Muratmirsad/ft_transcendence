@@ -24,4 +24,4 @@ COPY src /app/
 EXPOSE 8000
 
 # Default command
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "transcendence_app.wsgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "transcendence_app.asgi:application"]

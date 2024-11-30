@@ -2,3 +2,6 @@ Django>=4.0
 gunicorn
 psycopg2-binary
 python-dotenv
+channels
+channels-redis
+daphne

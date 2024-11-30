@@ -15,7 +15,7 @@ const routes = {
     "#game": `
       <h1>Pong Game</h1>
       <div id="game-container">
-        <iframe src="game/game.html" style="width: 100%; height: 400px; border: none;"></iframe>
+        <iframe src="game/index.html" style="width: 100%; height: 600px; border: none;"></iframe>
       </div>
     `,
   };

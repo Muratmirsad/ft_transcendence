@@ -13,6 +13,7 @@ services:
       - ../docker/backend/src:/app
     depends_on:
       - database
+      - redis
     env_file:
       - ../requirements/.env
 
@@ -44,6 +45,13 @@ services:
       - static_volume:/app/static
     depends_on:
       - backend
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:

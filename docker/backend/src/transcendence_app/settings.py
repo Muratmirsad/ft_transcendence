@@ -48,6 +48,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "frontend",
 ]
 
+ASGI_APPLICATION = "transcendence_app.asgi.application"
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -66,6 +68,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -78,7 +81,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'transcendence_app.urls'
 
 TEMPLATES = [
     {
@@ -97,6 +99,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'transcendence_app.wsgi.application'
+
+# For web socket
+ROOT_URLCONF = 'transcendence_app.urls'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],  # Redis konteyner adı ve portu
+        },
+    },
+}
 
 
 # Database
