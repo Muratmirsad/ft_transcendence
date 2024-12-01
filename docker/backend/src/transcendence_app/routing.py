@@ -1,6 +1,6 @@
-from django.urls import re_path
-from transcendence_app.consumers import GameConsumer
+from django.urls import path
+from game.consumers import GameConsumer
 
 websocket_urlpatterns = [
-    re_path(r"ws/game/(?P<room_name>\w+)/$", GameConsumer.as_asgi()),
+    path("ws/game/<str:room_name>/", GameConsumer.as_asgi()),
 ]

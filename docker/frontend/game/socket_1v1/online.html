@@ -3,11 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pong Game - Online 1v1</title>
+  <title>Online Pong</title>
   <link rel="stylesheet" href="game.css">
 </head>
 <body>
-  <canvas id="gc" width="800" height="500"></canvas>
+  <div id="main-menu">
+    <h1>Online Pong</h1>
+    <div id="create-room">
+      <button id="create-room-button">Create Room</button>
+      <p id="room-code-display" style="display: none;">Room Code: <span id="room-code"></span></p>
+    </div>
+    <div id="join-room">
+      <input type="text" id="room-input" placeholder="Enter Room Code">
+      <button id="join-room-button">Join Room</button>
+    </div>
+  </div>
+  <canvas id="gc" width="800" height="500" style="display: none;"></canvas>
   <script src="online.js"></script>
 </body>
 </html>

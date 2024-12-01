@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "channels",
+    'game',
 ]
 
 MIDDLEWARE = [
@@ -98,17 +99,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'transcendence_app.wsgi.application'
+ASGI_APPLICATION = 'transcendence_app.asgi.application'
 
 # For web socket
 ROOT_URLCONF = 'transcendence_app.urls'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("redis", 6379)],  # Redis konteyner adı ve portu
-        },
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # Geliştirme için InMemory
     },
 }
 
