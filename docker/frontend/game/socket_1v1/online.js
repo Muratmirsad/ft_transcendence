@@ -103,11 +103,15 @@ function sendScoreUpdate() {
 
 // Oyunu başlat
 function startGame() {
-  mainMenu.style.display = "none";
-  canvas.style.display = "block";
-  gameActive = true;
-  gameLoop();
+  if (!gameActive) { // Oyunun zaten aktif olup olmadığını kontrol et
+    console.log("Oyun başlıyor...");
+    mainMenu.style.display = "none";
+    canvas.style.display = "block";
+    gameActive = true; // Oyunu aktif hale getir
+    gameLoop(); // Oyun döngüsünü başlat
+  }
 }
+
 
 // Tuş basma ve bırakma olayları
 window.addEventListener("keydown", (e) => {
@@ -132,6 +136,14 @@ function movePaddles() {
   if (keysPressed["s"] && paddle1_y < canvas.height - paddle_height) {
     paddle1_y += 10;
   }
+}
+
+// Topun başlangıç pozisyonunu sıfırla
+function resetBall() {
+  ball_x = canvas.width / 2;
+  ball_y = canvas.height / 2;
+  x_velocity = -x_velocity; // Topun yönünü değiştir
+  y_velocity = 5; // Varsayılan bir y_velocity değeri
 }
 
 // Top hareketi
