@@ -106,9 +106,14 @@ ROOT_URLCONF = 'transcendence_app.urls'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",  # Geliştirme için InMemory
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],  # Redis konteyner adı
+        },
     },
 }
+
+
 
 
 # Database

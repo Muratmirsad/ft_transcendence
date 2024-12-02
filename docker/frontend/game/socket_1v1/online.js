@@ -2,163 +2,224 @@
 const canvas = document.getElementById("gc");
 const context = canvas.getContext("2d");
 
+// HTML Elementleri
+const createRoomButton = document.getElementById("create-room-button");
+const joinRoomButton = document.getElementById("join-room-button");
+const roomCodeDisplay = document.getElementById("room-code-display");
+const roomCodeSpan = document.getElementById("room-code");
+const roomInput = document.getElementById("room-input");
+const mainMenu = document.getElementById("main-menu");
+
 // Oyun değişkenleri
-let paddle_y = 40; // Yerel paddle
-let opponent_paddle_y = 40; // Karşı oyuncunun paddle'ı
+let paddle1_y = 40;
+let paddle2_y = 40;
 const paddle_thickness = 10;
 const paddle_height = 100;
 let ball_x = canvas.width / 2;
 let ball_y = canvas.height / 2;
-let ball_velocity_x = 5;
-let ball_velocity_y = 5;
-const ball_dimension = 10; // Topun boyutu
-let score = 0;
-let opponent_score = 0;
+let ball_dimension = 10;
+let x_velocity = 5;
+let y_velocity = 5;
+let player1_score = 0;
+let player2_score = 0;
+let gameActive = false;
+let roomName = null;
+let socket = null;
 
-let keysPressed = {};
-let ws;
-let role = ""; // Oyuncu rolü (player_1 veya player_2)
+// Klavye tuslari icin
+const keysPressed = {};
 
-// Oyunu başlatma
-function startGame() {
-  console.log("Oyun başladı!");
-  document.getElementById("main-menu").style.display = "none";
-  document.getElementById("gc").style.display = "block";
-
-  gameLoop();
+// Rastgele 4 haneli bir oda kodu oluştur
+function generateRoomCode() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 // WebSocket bağlantısını başlat
-function connectWebSocket(room) {
-  ws = new WebSocket(`ws://localhost:8000/ws/game/${room}/`);
+function startWebSocket(roomName) {
+  socket = new WebSocket(`ws://localhost:8000/ws/game/${roomName}/`);
 
-  ws.onopen = () => {
-    console.log("WebSocket bağlantısı kuruldu.");
+  socket.onopen = function () {
+    console.log(`WebSocket bağlantısı kuruldu. Room: ${roomName}`);
   };
 
-  ws.onmessage = (message) => {
-    const data = JSON.parse(message.data);
-    console.log("Sunucudan mesaj alındı:", data);
+  socket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
 
-    if (data.event === "connected") {
-      role = data.role;
-      console.log(`Bu oyuncunun rolü: ${role}`);
+    if (data.action === "update_paddle") {
+      // Diğer oyuncunun paddle pozisyonunu güncelle
+      paddle2_y = data.paddle_y;
     }
 
-    if (data.event === "start_game") {
-      startGame(); // Sunucudan "start_game" olayı alındığında oyun başlar
+    if (data.action === "update_ball") {
+      // Top pozisyonunu güncelle
+      ball_x = data.ball_data.x;
+      ball_y = data.ball_data.y;
     }
 
-    if (data.event === "update") {
-      ball_x = data.ball_position.x;
-      ball_y = data.ball_position.y;
-      opponent_paddle_y = data.paddle_positions[role === "player_1" ? "player_2" : "player_1"];
-      score = data.scores[role];
-      opponent_score = data.scores[role === "player_1" ? "player_2" : "player_1"];
-      player_count = data.player_count;
-      roles = data.roles;
+    if (data.action === "update_score") {
+      // Skorları güncelle
+      player1_score = data.score_data.player1_score;
+      player2_score = data.score_data.player2_score;
+    }
 
-      // Oyuncu sayısına göre arayüzü güncelle (örneğin, ikinci oyuncu katıldığında mesaj göster)
-      if (player_count === 2) {
-          // İkinci oyuncu katıldı, oyun başlayabilir
-          startGame();
-      }
-  }
-};
-
-  ws.onclose = () => {
-    console.error("WebSocket bağlantısı kapandı. Yeniden bağlanılıyor...");
-    setTimeout(() => connectWebSocket(room), 5000);
+    if (data.action === "start_game") {
+      // Oyunu başlat
+      console.log("Oyun başladı!");
+      startGame();
+    }
   };
 
-  ws.onerror = (error) => {
-    console.error("WebSocket hatası:", error);
+  socket.onclose = function () {
+    console.log("WebSocket bağlantısı kapatıldı.");
   };
 }
 
-// Paddle hareketlerini dinle
-window.addEventListener("keydown", (e) => {
-  if (e.key && e.key.toLowerCase) {
-    keysPressed[e.key.toLowerCase()] = true;
+// Paddle hareketlerini gönder
+function sendPaddlePosition() {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(
+      JSON.stringify({
+        action: "update_paddle",
+        paddle_y: paddle1_y,
+      })
+    );
+  }
+}
 
-    if (e.key.toLowerCase() === "w" || e.key.toLowerCase() === "s") {
-      sendMessage({ event: "move", key: e.key.toLowerCase(), role });
-    }
+// Skor güncellemelerini gönder
+function sendScoreUpdate() {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(
+      JSON.stringify({
+        action: "update_score",
+        score_data: {
+          player1_score: player1_score,
+          player2_score: player2_score,
+        },
+      })
+    );
+  }
+}
+
+// Oyunu başlat
+function startGame() {
+  mainMenu.style.display = "none";
+  canvas.style.display = "block";
+  gameActive = true;
+  gameLoop();
+}
+
+// Tuş basma ve bırakma olayları
+window.addEventListener("keydown", (e) => {
+  if (gameActive) {
+    keysPressed[e.key.toLowerCase()] = true;
+    sendPaddlePosition();
   }
 });
 
 window.addEventListener("keyup", (e) => {
-  if (e.key && e.key.toLowerCase) {
+  if (gameActive) {
     keysPressed[e.key.toLowerCase()] = false;
+    sendPaddlePosition();
   }
 });
 
-// Paddle ve top hareketleri
+// Paddle hareketleri
 function movePaddles() {
-  if (keysPressed["w"] && paddle_y > 0) {
-    paddle_y -= 10;
+  if (keysPressed["w"] && paddle1_y > 0) {
+    paddle1_y -= 10;
   }
-  if (keysPressed["s"] && paddle_y < canvas.height - paddle_height) {
-    paddle_y += 10;
+  if (keysPressed["s"] && paddle1_y < canvas.height - paddle_height) {
+    paddle1_y += 10;
   }
 }
 
-// Çizim
+// Top hareketi
+function moveBall() {
+  ball_x += x_velocity;
+  ball_y += y_velocity;
+
+  if (ball_y < 0 || ball_y > canvas.height) {
+    y_velocity = -y_velocity;
+  }
+
+  if (
+    ball_x < paddle_thickness &&
+    ball_y > paddle1_y &&
+    ball_y < paddle1_y + paddle_height
+  ) {
+    x_velocity = -x_velocity;
+  }
+
+  if (
+    ball_x > canvas.width - paddle_thickness &&
+    ball_y > paddle2_y &&
+    ball_y < paddle2_y + paddle_height
+  ) {
+    x_velocity = -x_velocity;
+  }
+
+  if (ball_x < 0) {
+    player2_score++;
+    resetBall();
+    sendScoreUpdate();
+  }
+
+  if (ball_x > canvas.width) {
+    player1_score++;
+    resetBall();
+    sendScoreUpdate();
+  }
+}
+
+// Canvas çizimi
 function draw() {
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "black";
+  context.fillRect(0, 0, canvas.width, canvas.height);
 
   context.fillStyle = "white";
-  context.fillRect(0, paddle_y, paddle_thickness, paddle_height); // Yerel paddle
+  context.fillRect(0, paddle1_y, paddle_thickness, paddle_height);
   context.fillRect(
     canvas.width - paddle_thickness,
-    opponent_paddle_y,
+    paddle2_y,
     paddle_thickness,
     paddle_height
-  ); // Karşı oyuncunun paddle'ı
+  );
 
+  context.fillStyle = "white";
   context.beginPath();
-  context.arc(ball_x, ball_y, ball_dimension, 0, Math.PI * 2);
+  context.arc(ball_x, ball_y, ball_dimension, 0, Math.PI * 2, true);
   context.fill();
 
-  context.font = "20px Arial";
-  context.fillText(score, 50, 50);
-  context.fillText(opponent_score, canvas.width - 50, 50);
+  context.font = "30px Arial";
+  context.fillText(player1_score, 100, 50);
+  context.fillText(player2_score, canvas.width - 100, 50);
 }
 
 // Oyun döngüsü
 function gameLoop() {
-  movePaddles();
-  draw();
-  requestAnimationFrame(gameLoop);
-}
-
-// WebSocket mesaj gönderme fonksiyonu
-function sendMessage(data) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(data));
-  } else {
-    console.error("WebSocket bağlantısı açık değil. Mesaj gönderilemedi.");
+  if (gameActive) {
+    movePaddles();
+    moveBall();
+    draw();
+    requestAnimationFrame(gameLoop);
   }
 }
 
-// Oda oluşturma ve katılma butonları
-document.getElementById("create-room-button").addEventListener("click", () => {
-  const roomName = Math.floor(1000 + Math.random() * 9000).toString();
-  console.log(`Oda oluşturuluyor: ${roomName}`);
-  connectWebSocket(roomName);
-
-  const roomCodeDisplay = document.getElementById("room-code-display");
-  const roomCodeSpan = document.getElementById("room-code");
+// "Create Room" butonuna tıklanınca
+createRoomButton.addEventListener("click", () => {
+  roomName = generateRoomCode();
   roomCodeSpan.textContent = roomName;
   roomCodeDisplay.style.display = "block";
+  startWebSocket(roomName);
 });
 
-document.getElementById("join-room-button").addEventListener("click", () => {
-  const enteredRoom = document.getElementById("room-input").value.trim();
-  if (enteredRoom) {
-    console.log(`Odaya katılınıyor: ${enteredRoom}`);
-    connectWebSocket(enteredRoom);
-  } else {
-    alert("Lütfen bir oda adı girin!");
+// "Join Room" butonuna tıklanınca
+joinRoomButton.addEventListener("click", () => {
+  const enteredRoomCode = roomInput.value.trim();
+  if (enteredRoomCode) {
+    roomName = enteredRoomCode;
+    startWebSocket(roomName);
+    startGame();
   }
 });
