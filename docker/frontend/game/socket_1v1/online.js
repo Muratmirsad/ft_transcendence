@@ -25,8 +25,10 @@ let player2_score = 0;
 let gameActive = false;
 let roomName = null;
 let socket = null;
+let player_id = null; // Oyuncunun kimliğini tutar
+const winningScore = 3; // Kazanma skoru
 
-// Klavye tuslari icin
+// Klavye tuşları için
 const keysPressed = {};
 
 // Rastgele 4 haneli bir oda kodu oluştur
@@ -34,44 +36,39 @@ function generateRoomCode() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
-// WebSocket bağlantısını başlat
+let playerCount = 0;
+
 function startWebSocket(roomName) {
-  socket = new WebSocket(`ws://localhost:8000/ws/game/${roomName}/`);
+  socket = new WebSocket(`wss://yourserver.com/${roomName}`);
 
-  socket.onopen = function () {
-    console.log(`WebSocket bağlantısı kuruldu. Room: ${roomName}`);
-  };
+  socket.addEventListener("open", () => {
+    console.log("WebSocket bağlantısı kuruldu.");
+    socket.send(JSON.stringify({ action: "join_room", room: roomName }));
+  });
 
-  socket.onmessage = function (event) {
+  socket.addEventListener("message", (event) => {
     const data = JSON.parse(event.data);
 
-    if (data.action === "update_paddle") {
-      // Diğer oyuncunun paddle pozisyonunu güncelle
-      paddle2_y = data.paddle_y;
-    }
-
-    if (data.action === "update_ball") {
-      // Top pozisyonunu güncelle
-      ball_x = data.ball_data.x;
-      ball_y = data.ball_data.y;
+    if (data.action === "player_joined") {
+      playerCount = data.playerCount;
+      if (playerCount === 2) {
+        startGame(); // İki oyuncu bağlandığında oyunu başlat
+      }
     }
 
     if (data.action === "update_score") {
-      // Skorları güncelle
       player1_score = data.score_data.player1_score;
       player2_score = data.score_data.player2_score;
     }
 
-    if (data.action === "start_game") {
-      // Oyunu başlat
-      console.log("Oyun başladı!");
-      startGame();
+    if (data.action === "update_paddle_position") {
+      // Paddle pozisyonlarını güncelle
     }
-  };
+  });
 
-  socket.onclose = function () {
-    console.log("WebSocket bağlantısı kapatıldı.");
-  };
+  socket.addEventListener("close", () => {
+    console.log("WebSocket bağlantısı kapandı.");
+  });
 }
 
 // Paddle hareketlerini gönder
@@ -80,7 +77,8 @@ function sendPaddlePosition() {
     socket.send(
       JSON.stringify({
         action: "update_paddle",
-        paddle_y: paddle1_y,
+        player_id: player_id,
+        paddle_y: player_id === 1 ? paddle1_y : paddle2_y,
       })
     );
   }
@@ -108,10 +106,16 @@ function startGame() {
     mainMenu.style.display = "none";
     canvas.style.display = "block";
     gameActive = true; // Oyunu aktif hale getir
+    resetBall(); // Topun başlangıç pozisyonunu sıfırla
+    resetPaddles(); // Paddle'ların başlangıç pozisyonunu sıfırla
     gameLoop(); // Oyun döngüsünü başlat
   }
 }
 
+function resetPaddles() {
+  paddle1_y = canvas.height / 2 - paddle_height / 2;
+  paddle2_y = canvas.height / 2 - paddle_height / 2;
+}
 
 // Tuş basma ve bırakma olayları
 window.addEventListener("keydown", (e) => {
@@ -130,11 +134,20 @@ window.addEventListener("keyup", (e) => {
 
 // Paddle hareketleri
 function movePaddles() {
-  if (keysPressed["w"] && paddle1_y > 0) {
-    paddle1_y -= 10;
-  }
-  if (keysPressed["s"] && paddle1_y < canvas.height - paddle_height) {
-    paddle1_y += 10;
+  if (player_id === 1) {
+    if (keysPressed["w"] && paddle1_y > 0) {
+      paddle1_y -= 10;
+    }
+    if (keysPressed["s"] && paddle1_y < canvas.height - paddle_height) {
+      paddle1_y += 10;
+    }
+  } else if (player_id === 2) {
+    if (keysPressed["o"] && paddle2_y > 0) {
+      paddle2_y -= 10;
+    }
+    if (keysPressed["l"] && paddle2_y < canvas.height - paddle_height) {
+      paddle2_y += 10;
+    }
   }
 }
 
@@ -142,8 +155,8 @@ function movePaddles() {
 function resetBall() {
   ball_x = canvas.width / 2;
   ball_y = canvas.height / 2;
-  x_velocity = -x_velocity; // Topun yönünü değiştir
-  y_velocity = 5; // Varsayılan bir y_velocity değeri
+  x_velocity = 5; // Başlangıç hızı
+  y_velocity = 5; // Başlangıç hızı
 }
 
 // Top hareketi
@@ -171,16 +184,22 @@ function moveBall() {
     x_velocity = -x_velocity;
   }
 
+  // Top canvas'ın dışına çıkarsa skoru artır
   if (ball_x < 0) {
     player2_score++;
     resetBall();
-    sendScoreUpdate();
-  }
-
-  if (ball_x > canvas.width) {
+  } else if (ball_x > canvas.width) {
     player1_score++;
     resetBall();
-    sendScoreUpdate();
+  }
+}
+
+// Skoru kontrol et
+function checkScore() {
+  if (player1_score >= winningScore || player2_score >= winningScore) {
+    gameActive = false;
+    console.log("Oyun bitti!");
+    // Oyun bittiğinde yapılacak işlemler
   }
 }
 
@@ -198,11 +217,6 @@ function draw() {
     paddle_height
   );
 
-  context.fillStyle = "white";
-  context.beginPath();
-  context.arc(ball_x, ball_y, ball_dimension, 0, Math.PI * 2, true);
-  context.fill();
-
   context.font = "30px Arial";
   context.fillText(player1_score, 100, 50);
   context.fillText(player2_score, canvas.width - 100, 50);
@@ -213,7 +227,8 @@ function gameLoop() {
   if (gameActive) {
     movePaddles();
     moveBall();
-    draw();
+    checkScore();
+    sendScoreUpdate();
     requestAnimationFrame(gameLoop);
   }
 }
@@ -232,6 +247,5 @@ joinRoomButton.addEventListener("click", () => {
   if (enteredRoomCode) {
     roomName = enteredRoomCode;
     startWebSocket(roomName);
-    startGame();
   }
 });
