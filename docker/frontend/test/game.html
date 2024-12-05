@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ping Pong Game</title>
+	<style>
+
+body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #ff6f61, #d500f9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        @keyframes fadeInOut {
+            0%, 20% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            50% {
+                opacity: 0;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+		.container {
+			text-align: center;
+		}
+
+		button {
+			background-color: #555;
+			color: white;
+			padding: 10px 20px;
+			margin: 10px;
+			border: none;
+			cursor: pointer;
+		}
+
+		button:hover {
+			background-color: #777;
+		}
+
+		input[type="text"] {
+			padding: 10px;
+			margin-top: 10px;
+		}
+
+		canvas {
+			background: #000;
+			display: block;
+			margin: 0 auto;
+		}
+        #game-link {
+            font-size: 1.25rem; /* Daha büyük yazı tipi boyutu */
+            font-weight: bold; /* Kalın yazı tipi */
+            color: #ffc107; /* Altın rengi */
+            text-transform: uppercase; /* Büyük harflerle göster */
+            letter-spacing: 2px; /* Harfler arasında boşluk */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3); /* Hafif gölge efekti */
+            transition: color 0.3s ease, transform 0.3s ease; /* Geçiş efektleri */
+        }
+        #game-link i {
+            margin-right: 8px; /* İkon ile metin arasına boşluk ekle */
+        }
+
+        #game-link:hover {
+            color: #ff5722; /* Turuncuya geçiş */
+            transform: scale(1.1); /* Hafif büyütme efekti */
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Gölgeyi artır */
+        }
+        #ping_pong_game {
+            font-size: 3rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #ffeb3b;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            animation: glow 2s ease-in-out infinite alternate, float 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5), 0 0 10px #ffeb3b, 0 0 20px #ffeb3b, 0 0 30px #ffeb3b, 0 0 40px #ffeb3b;
+            }
+            100% {
+                text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5), 0 0 20px #ffc107, 0 0 30px #ffc107, 0 0 40px #ffc107, 0 0 50px #ffc107;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+	</style>
+</head>
+
+<body>
+	<div id="join-page" class="container">
+        <div class="message mt-3" id="message"></div>
+		<h1 id="ping_pong_game">Ping Pong Game</h1>
+		<form id="create-room">
+			<button id="create-room-button" type="submit">Create Room</button>
+		</form>
+		<form id="join-room">
+			<input type="text" id="roomName" name="room_code" placeholder="Enter Room Code" required>
+			<button id="join_room_tournament" type="submit">Join Room</button>
+		</form>
+	</div>
+	<div id="gameCanvas" class="form-group">
+		<canvas id="pongCanvas" width="800" height="400"></canvas>
+	</div>
+	<form id="retry-id">
+		<h1 id="winner"></h1>
+		<button type="submit">Retry</button>
+	</form>
+    <script src="game.js"></script>
+</body>
+
+</html>

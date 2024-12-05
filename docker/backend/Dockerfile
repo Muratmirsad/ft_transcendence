@@ -24,4 +24,4 @@ COPY src /app/
 EXPOSE 8000
 
 # Default command
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "transcendence_app.asgi:application"]
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]

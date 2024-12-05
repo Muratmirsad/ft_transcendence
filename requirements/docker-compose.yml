@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -28,7 +26,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
-      - ../requirements/.env
+      - ../requirements/.env  # Postgres yapılandırmaları için .env dosyasını kullanır
+    # healthcheck:  # Database'in hazır olup olmadığını kontrol eder
+    #   test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
 
   nginx:
     build:

@@ -18,6 +18,12 @@ const routes = {
         <iframe src="game/index.html" style="width: 100%; height: 600px; border: none;"></iframe>
       </div>
     `,
+    "#login": `
+    <h1>Login</h1>
+    <div id="login-container">
+      <iframe src="login/index.html" style="width: 100%; height: 600px; border: none;"></iframe>
+    </div>
+  `,
   };
   
   // Sayfayı render eden fonksiyon
