@@ -26,7 +26,7 @@ function gameLoop(roomName, isHost, isPlayerA) {
   var ballX;
   var ballY;
 
-  const ws = new WebSocket(`wss://10.11.38.2/ws/game/${roomName}/`);
+  const ws = new WebSocket(`wss://127.0.0.1/ws/game/${roomName}/`);
 
   const drawRect = (x, y, w, h) => {
     context.fillStyle = "#FFF";
@@ -77,7 +77,7 @@ function gameLoop(roomName, isHost, isPlayerA) {
   const endGame = () => {
     clearCanvas();
     ws.close(); // WebSocket bağlantısını kapat
-    fetch("https://10.11.38.2/game/end_game/", {
+    fetch("https://127.0.0.1/game/end_game/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -163,7 +163,7 @@ export function setupGame() {
       console.log("Connected to server");
       console.log(parse_cookie.username);
 
-      fetch("https://10.11.38.2/game/create_room/", {
+      fetch("https://127.0.0.1/game/create_room/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -191,7 +191,7 @@ export function setupGame() {
       create_Room.style.display = "none";
       console.log(roomName);
       console.log("Connected to server");
-      fetch("https://10.11.38.2/game/join_room/", {
+      fetch("https://127.0.0.1/game/join_room/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
