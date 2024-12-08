@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gelişmiş Ping Pong Turnuvası</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        color: #333;
+      }
+      #gameContainer {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        text-align: center;
+        max-width: 800px;
+        width: 100%;
+      }
+      h1 {
+        color: #2c3e50;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+      }
+      canvas {
+        border: 3px solid #2c3e50;
+        border-radius: 8px;
+        background-color: #ecf0f1;
+        max-width: 100%;
+        height: auto;
+      }
+      input,
+      button,
+      select {
+        margin: 10px 5px;
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #bdc3c7;
+        border-radius: 5px;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.1s;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+      #playerInputs {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+      #scoreBoard,
+      #tournamentInfo {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+      }
+      #gameScreen {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <h1>Gelişmiş Ping Pong Turnuvası</h1>
+      <div id="setupScreen">
+        <select id="playerCount">
+          <option value="4">4 Oyuncu</option>
+          <option value="8">8 Oyuncu</option>
+          <option value="16">16 Oyuncu</option>
+        </select>
+        <button id="generateInputs">Oyuncu İsimlerini Gir</button>
+        <div id="playerInputs"></div>
+        <button id="startTournament" style="display: none">
+          Turnuvayı Başlat
+        </button>
+      </div>
+      <div id="gameScreen">
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+        <div id="scoreBoard"></div>
+        <div id="tournamentInfo"></div>
+      </div>
+    </div>
+  </body>
+</html>

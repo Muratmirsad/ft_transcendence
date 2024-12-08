@@ -29,6 +29,10 @@ env:
 	@chmod +x ./requirements/create_env.sh
 	@./requirements/create_env.sh
 
+key:
+	@chmod +x ./requirements/create_certificate.sh
+	@./requirements/create_certificate.sh
+
 # Help message
 help:
 	@echo "Available commands:"
