@@ -1,3 +1,4 @@
 requirements/.env
 app/nginx/ssl
 app/postgres_data
+app/postgres

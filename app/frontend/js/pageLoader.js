@@ -143,7 +143,7 @@ function setupNavbarCSS() {
       </li>
       <li class="nav-item me-3">
         <a class="nav-link" href="#" id="profile-link">
-          <i class="bi bi-person-circle"></i> <h6 id="profil-butonu">Profile</h6>
+          <i class="bi bi-person-circle"></i> <h6 id="profil-butonu">2FA</h6>
         </a>
       </li>
       <li class="nav-item">
